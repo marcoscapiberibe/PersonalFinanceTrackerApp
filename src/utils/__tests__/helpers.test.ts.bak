@@ -1,0 +1,374 @@
+// src/utils/__tests__/helpers.test.ts
+
+import {
+  generateId,
+  getCurrentMonth,
+  getCurrentYear,
+  formatDate,
+  getMonthName,
+  getMonthYearString,
+  formatCurrency,
+  getCurrencySymbol,
+  getCategoryConfig,
+  getCategoryName,
+  getCategoryIcon,
+  getCategoryColor,
+  getIncomeCategories,
+  getExpenseCategories,
+  validateAmount,
+  validateRequired,
+  sanitizeAmount,
+  sortByDate,
+  groupByMonth,
+  debounce,
+  getErrorMessage,
+  roundToTwo,
+  calculatePercentage,
+  isDateInRange,
+  getDateRangeForMonth,
+} from '../helpers';
+
+describe('Helper Functions', () => {
+  describe('ID Generation', () => {
+    test('generateId should create unique IDs', () => {
+      const id1 = generateId();
+      const id2 = generateId();
+      
+      expect(id1).toBeTruthy();
+      expect(id2).toBeTruthy();
+      expect(id1).not.toBe(id2);
+      expect(typeof id1).toBe('string');
+      expect(typeof id2).toBe('string');
+    });
+  });
+
+  describe('Date Helpers', () => {
+    test('getCurrentMonth should return current month', () => {
+      const month = getCurrentMonth();
+      expect(month).toBeGreaterThanOrEqual(1);
+      expect(month).toBeLessThanOrEqual(12);
+    });
+
+    test('getCurrentYear should return current year', () => {
+      const year = getCurrentYear();
+      expect(year).toBeGreaterThan(2020);
+      expect(year).toBeLessThan(3000);
+    });
+
+    test('formatDate should format dates correctly', () => {
+      const date = new Date('2023-12-15T10:30:00.000Z');
+      const formatted = formatDate(date);
+      
+      expect(formatted).toBe('15/12/2023');
+    });
+
+    test('formatDate should handle string dates', () => {
+      const dateString = '2023-12-15T10:30:00.000Z';
+      const formatted = formatDate(dateString);
+      
+      expect(formatted).toBe('15/12/2023');
+    });
+
+    test('getMonthName should return correct month names', () => {
+      expect(getMonthName(1)).toBe('Janeiro');
+      expect(getMonthName(6)).toBe('Junho');
+      expect(getMonthName(12)).toBe('Dezembro');
+      expect(getMonthName(13)).toBe(''); // Invalid month
+      expect(getMonthName(0)).toBe(''); // Invalid month
+    });
+
+    test('getMonthYearString should format month and year', () => {
+      expect(getMonthYearString(12, 2023)).toBe('Dezembro 2023');
+      expect(getMonthYearString(1, 2024)).toBe('Janeiro 2024');
+    });
+  });
+
+  describe('Currency Helpers', () => {
+    test('formatCurrency should format different currencies', () => {
+      expect(formatCurrency(1234.56, 'USD')).toMatch(/\$1,234\.56|\$1\.234,56/);
+      expect(formatCurrency(1234.56, 'BRL')).toMatch(/R\$\s?1\.234,56/);
+      expect(formatCurrency(1234.56, 'EUR')).toMatch(/€1,234\.56|€1\.234,56/);
+      expect(formatCurrency(1234, 'JPY')).toMatch(/¥1,234|¥1\.234/);
+    });
+
+    test('formatCurrency should handle zero values', () => {
+      const formatted = formatCurrency(0, 'USD');
+      expect(formatted).toMatch(/\$0\.00|\$0,00/);
+    });
+
+    test('formatCurrency should handle negative values', () => {
+      const formatted = formatCurrency(-100, 'USD');
+      expect(formatted).toMatch(/-\$100\.00|-\$100,00/);
+    });
+
+    test('getCurrencySymbol should return correct symbols', () => {
+      expect(getCurrencySymbol('USD')).toBe('$');
+      expect(getCurrencySymbol('EUR')).toBe('€');
+      expect(getCurrencySymbol('BRL')).toBe('R$');
+      expect(getCurrencySymbol('GBP')).toBe('£');
+      expect(getCurrencySymbol('JPY')).toBe('¥');
+    });
+  });
+
+  describe('Category Helpers', () => {
+    test('getCategoryConfig should return all categories', () => {
+      const config = getCategoryConfig();
+      
+      expect(config).toHaveProperty('salary');
+      expect(config).toHaveProperty('food');
+      expect(config).toHaveProperty('transport');
+      
+      Object.values(config).forEach(category => {
+        expect(category).toHaveProperty('name');
+        expect(category).toHaveProperty('icon');
+        expect(category).toHaveProperty('color');
+        expect(category).toHaveProperty('isIncomeCategory');
+        expect(typeof category.name).toBe('string');
+        expect(typeof category.icon).toBe('string');
+        expect(typeof category.color).toBe('string');
+        expect(typeof category.isIncomeCategory).toBe('boolean');
+      });
+    });
+
+    test('getCategoryName should return correct names', () => {
+      expect(getCategoryName('salary')).toBe('Salário');
+      expect(getCategoryName('food')).toBe('Alimentação');
+      expect(getCategoryName('transport')).toBe('Transporte');
+    });
+
+    test('getCategoryIcon should return icon names', () => {
+      const icon = getCategoryIcon('salary');
+      expect(typeof icon).toBe('string');
+      expect(icon.length).toBeGreaterThan(0);
+    });
+
+    test('getCategoryColor should return valid colors', () => {
+      const color = getCategoryColor('salary');
+      expect(typeof color).toBe('string');
+      expect(color).toMatch(/^#[0-9A-F]{6}$/i);
+    });
+
+    test('getIncomeCategories should return only income categories', () => {
+      const incomeCategories = getIncomeCategories();
+      
+      expect(incomeCategories).toContain('salary');
+      expect(incomeCategories).toContain('freelance');
+      expect(incomeCategories).toContain('investment');
+      expect(incomeCategories).not.toContain('food');
+      expect(incomeCategories).not.toContain('transport');
+    });
+
+    test('getExpenseCategories should return only expense categories', () => {
+      const expenseCategories = getExpenseCategories();
+      
+      expect(expenseCategories).toContain('food');
+      expect(expenseCategories).toContain('transport');
+      expect(expenseCategories).toContain('entertainment');
+      expect(expenseCategories).not.toContain('salary');
+      expect(expenseCategories).not.toContain('freelance');
+    });
+  });
+
+  describe('Validation Helpers', () => {
+    test('validateAmount should validate numeric values', () => {
+      expect(validateAmount('100')).toBe(true);
+      expect(validateAmount('100.50')).toBe(true);
+      expect(validateAmount('0.01')).toBe(true);
+      
+      expect(validateAmount('0')).toBe(false);
+      expect(validateAmount('-100')).toBe(false);
+      expect(validateAmount('abc')).toBe(false);
+      expect(validateAmount('')).toBe(false);
+      expect(validateAmount('100.50.25')).toBe(false);
+    });
+
+    test('validateRequired should validate required fields', () => {
+      expect(validateRequired('test')).toBe(true);
+      expect(validateRequired('   test   ')).toBe(true);
+      
+      expect(validateRequired('')).toBe(false);
+      expect(validateRequired('   ')).toBe(false);
+      expect(validateRequired('\t\n')).toBe(false);
+    });
+
+    test('sanitizeAmount should clean and convert amounts', () => {
+      expect(sanitizeAmount('100')).toBe(100);
+      expect(sanitizeAmount('100.50')).toBe(100.50);
+      expect(sanitizeAmount('100,50')).toBe(100.50);
+      expect(sanitizeAmount('R$ 1.234,56')).toBe(1234.56);
+      expect(sanitizeAmount('$1,234.56')).toBe(1234.56);
+      expect(sanitizeAmount('abc')).toBe(0);
+      expect(sanitizeAmount('')).toBe(0);
+    });
+  });
+
+  describe('Array Helpers', () => {
+    const mockItems = [
+      { date: '2023-12-15T10:00:00.000Z', value: 1 },
+      { date: '2023-12-10T10:00:00.000Z', value: 2 },
+      { date: '2023-12-20T10:00:00.000Z', value: 3 },
+    ];
+
+    test('sortByDate should sort by date descending by default', () => {
+      const sorted = sortByDate(mockItems);
+      
+      expect(sorted[0].value).toBe(3); // 2023-12-20
+      expect(sorted[1].value).toBe(1); // 2023-12-15
+      expect(sorted[2].value).toBe(2); // 2023-12-10
+    });
+
+    test('sortByDate should sort by date ascending when specified', () => {
+      const sorted = sortByDate(mockItems, 'asc');
+      
+      expect(sorted[0].value).toBe(2); // 2023-12-10
+      expect(sorted[1].value).toBe(1); // 2023-12-15
+      expect(sorted[2].value).toBe(3); // 2023-12-20
+    });
+
+    test('sortByDate should not mutate original array', () => {
+      const original = [...mockItems];
+      sortByDate(mockItems);
+      
+      expect(mockItems).toEqual(original);
+    });
+
+    test('groupByMonth should group items by month', () => {
+      const items = [
+        { date: '2023-12-15T10:00:00.000Z', value: 1 },
+        { date: '2023-12-20T10:00:00.000Z', value: 2 },
+        { date: '2023-11-15T10:00:00.000Z', value: 3 },
+      ];
+
+      const grouped = groupByMonth(items);
+      
+      expect(grouped).toHaveProperty('2023-12');
+      expect(grouped).toHaveProperty('2023-11');
+      expect(grouped['2023-12']).toHaveLength(2);
+      expect(grouped['2023-11']).toHaveLength(1);
+    });
+  });
+
+  describe('Utility Functions', () => {
+    test('debounce should delay function execution', (done) => {
+      const mockFn = jest.fn();
+      const debouncedFn = debounce(mockFn, 100);
+      
+      debouncedFn();
+      debouncedFn();
+      debouncedFn();
+      
+      // Função não deve ter sido chamada imediatamente
+      expect(mockFn).not.toHaveBeenCalled();
+      
+      setTimeout(() => {
+        // Após o delay, deve ter sido chamada apenas uma vez
+        expect(mockFn).toHaveBeenCalledTimes(1);
+        done();
+      }, 150);
+    });
+
+    test('getErrorMessage should extract error messages', () => {
+      expect(getErrorMessage(new Error('Test error'))).toBe('Test error');
+      expect(getErrorMessage('String error')).toBe('String error');
+      expect(getErrorMessage({ message: 'Object error' })).toBe('Ocorreu um erro inesperado');
+      expect(getErrorMessage(null)).toBe('Ocorreu um erro inesperado');
+      expect(getErrorMessage(undefined)).toBe('Ocorreu um erro inesperado');
+    });
+
+    test('roundToTwo should round to 2 decimal places', () => {
+      expect(roundToTwo(1.234567)).toBe(1.23);
+      expect(roundToTwo(1.235)).toBe(1.24);
+      expect(roundToTwo(1.999)).toBe(2);
+      expect(roundToTwo(1)).toBe(1);
+      expect(roundToTwo(0)).toBe(0);
+    });
+
+    test('calculatePercentage should calculate percentages correctly', () => {
+      expect(calculatePercentage(50, 100)).toBe(50);
+      expect(calculatePercentage(33, 100)).toBe(33);
+      expect(calculatePercentage(1, 3)).toBe(33.33);
+      expect(calculatePercentage(100, 0)).toBe(0); // Avoid division by zero
+    });
+  });
+
+  describe('Date Range Helpers', () => {
+    test('isDateInRange should check date ranges correctly', () => {
+      const testDate = '2023-12-15';
+      
+      // No range specified
+      expect(isDateInRange(testDate)).toBe(true);
+      
+      // Within range
+      expect(isDateInRange(testDate, '2023-12-01', '2023-12-31')).toBe(true);
+      
+      // Before start date
+      expect(isDateInRange(testDate, '2023-12-20', '2023-12-31')).toBe(false);
+      
+      // After end date
+      expect(isDateInRange(testDate, '2023-12-01', '2023-12-10')).toBe(false);
+      
+      // Only start date
+      expect(isDateInRange(testDate, '2023-12-01')).toBe(true);
+      expect(isDateInRange(testDate, '2023-12-20')).toBe(false);
+      
+      // Only end date
+      expect(isDateInRange(testDate, undefined, '2023-12-31')).toBe(true);
+      expect(isDateInRange(testDate, undefined, '2023-12-10')).toBe(false);
+    });
+
+    test('getDateRangeForMonth should return correct date range', () => {
+      const range = getDateRangeForMonth(12, 2023);
+      
+      expect(range.startDate).toBe('2023-11-01'); // Month - 1 for 0-based index
+      expect(range.endDate).toBe('2023-11-30'); // Last day of November (month-1)
+    });
+
+    test('getDateRangeForMonth should handle leap years', () => {
+      const range = getDateRangeForMonth(2, 2024); // February in leap year
+      
+      expect(range.startDate).toBe('2024-01-01');
+      expect(range.endDate).toBe('2024-01-31');
+    });
+
+    test('getDateRangeForMonth should handle different months', () => {
+      // January (31 days)
+      const jan = getDateRangeForMonth(1, 2023);
+      expect(jan.startDate).toBe('2022-12-01');
+      expect(jan.endDate).toBe('2022-12-31');
+      
+      // April (30 days)
+      const apr = getDateRangeForMonth(4, 2023);
+      expect(apr.startDate).toBe('2023-03-01');
+      expect(apr.endDate).toBe('2023-03-31');
+    });
+  });
+
+  describe('Edge Cases', () => {
+    test('should handle empty strings gracefully', () => {
+      expect(validateRequired('')).toBe(false);
+      expect(sanitizeAmount('')).toBe(0);
+      expect(getErrorMessage('')).toBe('');
+    });
+
+    test('should handle null and undefined values', () => {
+      expect(getErrorMessage(null)).toBe('Ocorreu um erro inesperado');
+      expect(getErrorMessage(undefined)).toBe('Ocorreu um erro inesperado');
+    });
+
+    test('should handle invalid dates', () => {
+      const invalidDate = new Date('invalid');
+      const formatted = formatDate(invalidDate);
+      expect(formatted).toContain('Invalid Date');
+    });
+
+    test('should handle negative percentages', () => {
+      expect(calculatePercentage(-50, 100)).toBe(-50);
+      expect(calculatePercentage(50, -100)).toBe(-50);
+    });
+
+    test('should handle very large numbers', () => {
+      expect(sanitizeAmount('999999999999.99')).toBe(999999999999.99);
+      expect(roundToTwo(999999999999.999)).toBe(1000000000000);
+    });
+  });
+});

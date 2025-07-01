@@ -1,16 +1,20 @@
 {
   "expo": {
-    "name": "PersonalFinanceTracker",
+    "name": "Personal Finance Tracker App",
     "slug": "PersonalFinanceTracker",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "newArchEnabled": true,
     "splash": {
-      "image": "./assets/splash-icon.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "image": "./assets/splash-static.png",
+      "resizeMode": "cover",
+      "backgroundColor": "#002B5B",
+      "dark": {
+        "image": "./assets/icon.png",
+        "resizeMode": "cover",
+        "backgroundColor": "#002B5B"
+      }
     },
     "ios": {
       "supportsTablet": true
@@ -18,12 +22,12 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#002B5B"
       },
       "edgeToEdgeEnabled": true
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/icon.png"
     }
   }
 }
