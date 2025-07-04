@@ -186,9 +186,9 @@ git push origin feature/nova-funcionalidade
 
 ## 📞 Contato
 
-**Desenvolvedor**: 
-**Email**: 
-**LinkedIn**: 
+##### **Desenvolvedor**: Marcos Capiberibe
+##### **Email**: marcoscapiberibedev@hotmail.com
+##### **LinkedIn**: www.linkedin.com/in/marcos-capiberibe
 
 ---
 
