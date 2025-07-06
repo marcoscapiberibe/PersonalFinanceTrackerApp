@@ -1,0 +1,8 @@
+# Força a identificação correta como TypeScript
+*.ts linguist-language=TypeScript
+*.tsx linguist-language=TypeScript
+
+
+build/** linguist-detectable=false
+mocks/** linguist-detectable=false
+node_modules/** linguist-detectable=false
