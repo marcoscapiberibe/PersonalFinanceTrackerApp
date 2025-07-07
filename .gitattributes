@@ -1,8 +1,22 @@
 # Força a identificação correta como TypeScript
+# *.ts linguist-language=TypeScript
+# *.tsx linguist-language=TypeScript
+
+
+# build/** linguist-detectable=false
+# mocks/** linguist-detectable=false
+# node_modules/** linguist-detectable=false
+
+# Força todos os .ts e .tsx (inclusive na raiz) a serem reconhecidos como TypeScript
 *.ts linguist-language=TypeScript
 *.tsx linguist-language=TypeScript
 
+# Alternativamente, força arquivos específicos na raiz se necessário
+/App.tsx linguist-language=TypeScript
+/index.ts linguist-language=TypeScript
 
+# Ignora diretórios que não devem influenciar a detecção
 build/** linguist-detectable=false
+coverage/** linguist-detectable=false
 mocks/** linguist-detectable=false
 node_modules/** linguist-detectable=false
